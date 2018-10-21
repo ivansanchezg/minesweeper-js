@@ -6,7 +6,6 @@ const cols = 10;
 let buttonsDiv;
 
 // Configure with input text number of cols, rows and total mines: Check how it is done by microsoft and google
-// Move the mouse event check to a separate function
 // Change win and game over alert for text on top of div
 // Check browser compatibility
 
@@ -58,41 +57,45 @@ function createButtons() {
             button.style.height = '16px';
             button.style.display = 'inline';
             button.style.textAlign = 'center';
+            button.style.margin = 'auto';
             button.style.color = 'black';
             button.style.fontSize = '12px';
             button.style.padding = '0px';
-            button.onmouseup = (event) => {
-                let isRightClick;
-                if ("which" in event) { // Gecko (Firefox), WebKit (Safari/Chrome) & Opera
-                    isRightClick = event.which === 3; 
-                } else if ("button" in event) { // IE, Opera 
-                    isRightClick = event.button === 2;
-                }
-
-                if (isRightClick) {
-                    if (button.innerText === 'F') {
-                        button.innerText = '';
-                    } else {
-                        button.innerText = 'F';
-                    }
-                } else {
-                    if (button.innerText === 'F') return;
-
-                    if (isAMine(row, col)) {
-                        alert('BOOM');
-                        revealMines();
-                        disableAllButtons();
-                    } else {
-                        revealSquare(row, col);
-                        checkWin();
-                    }
-                }
-            }
-            
+            button.onmouseup = (event) => onMouseClick(event, button, row, col);            
             buttonsDiv.appendChild(button);
             rowButtons.push(button);
         }
         buttons.push(rowButtons);
+    }
+}
+
+function onMouseClick(event, button, row, col) {
+    let isRightClick;
+    if ("which" in event) { // Gecko (Firefox), WebKit (Safari/Chrome) & Opera
+        isRightClick = event.which === 3; 
+    } else if ("button" in event) { // IE, Opera 
+        isRightClick = event.button === 2;
+    }
+
+    if (isRightClick) {
+        if (button.innerText === 'F') {
+            button.innerText = '';
+            button.style.color = 'black';
+        } else {
+            button.innerText = 'F';
+            button.style.color = 'blue';
+        }
+    } else {
+        if (button.innerText === 'F') return;
+
+        if (isAMine(row, col)) {
+            alert('BOOM');
+            revealMines();
+            disableAllButtons();
+        } else {
+            revealSquare(row, col);
+            checkWin();
+        }
     }
 }
 

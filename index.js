@@ -1,15 +1,42 @@
 const minesTotal = 10;
 const mines = [];
 const buttons = [];
-const rows = 10;
-const cols = 10;
+const rows = 9;
+const cols = 9;
 let buttonsDiv;
+let difficulty = 'easy';
+
+const difficulties = {
+    'easy': {
+        rows: 9,
+        cols: 9,
+        mines: 10,
+    },
+    'medium': {
+        rows: 16,
+        cols: 16,
+        mines: 40
+    },
+    'hard': {
+        rows: 24,
+        cols: 20,
+        mines: 99,
+    }
+}
+
+// To do: change values when selecting something from dropdown
+
 
 // Configure with input text number of cols, rows and total mines: Check how it is done by microsoft and google
 // Change win and game over alert for text on top of div
 // Check browser compatibility
 
 window.onload = () => {
+    loadComponents();
+}
+
+function loadComponents() {
+    createDifficultyDropdown();
     createMinesweeper();
 }
 
@@ -17,6 +44,35 @@ function createMinesweeper() {
     createMines();
     createMainDiv();
     createButtons();
+}
+
+function createDifficultyDropdown() {
+    const div = document.createElement('div');
+    
+    const easy = document.createElement('option');
+    easy.value = 'easy';
+    easy.innerText = 'Easy';
+
+    const medium = document.createElement('option');
+    medium.value = 'medium';
+    medium.innerText = 'Medium';
+
+    const hard = document.createElement('option');
+    hard.value = 'hard';
+    hard.innerText = 'Hard';
+    
+    const select = document.createElement('select');
+    select.onchange = () => {
+        console.log(select.value);
+        createMinesweeper();
+    }
+    select.appendChild(easy);
+    select.appendChild(medium);
+    select.appendChild(hard);
+
+    div.appendChild(select);
+
+    document.getElementById('minesweeper').appendChild(div);
 }
 
 function createMines() {
@@ -34,13 +90,19 @@ function createMines() {
 }
 
 function createMainDiv() {
+    const checkButtonsDiv = document.getElementById('buttonsDiv');
+    if (checkButtonsDiv !== undefined) {
+        document.removeChild(checkButtonsDiv);
+    }
+
     // Create div that will contain all buttons
-    buttonsDiv = document.createElement('div');
+    const buttonsDiv = document.createElement('div');
+    buttonsDiv.id = 'buttonsDiv';
     buttonsDiv.oncontextmenu = () => {
         return false;
     }
-    buttonsDiv.style.width = '160px';
-    buttonsDiv.style.height = '160px';
+    buttonsDiv.style.width = '144px';
+    buttonsDiv.style.height = '144px';
     buttonsDiv.style.background = 'grey';
     buttonsDiv.style.color = 'white';
 
@@ -49,6 +111,8 @@ function createMainDiv() {
 
 function createButtons() {
     // Create all buttons
+    const buttonsDiv = document.getElementById('buttonsDiv');
+
     for (let row = 0; row < rows; row++) {
         const rowButtons = [];
         for (let col = 0; col < cols; col++) {

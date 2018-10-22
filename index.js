@@ -17,7 +17,7 @@ const difficulties = {
     'medium': {
         rows: 16,
         cols: 16,
-        mines: 40
+        mines: 40,
     },
     'hard': {
         rows: 24,
@@ -26,18 +26,12 @@ const difficulties = {
     }
 }
 
-// Change win and game over alert for text on top of div
-// Check browser compatibility
-
 window.onload = () => {
     loadComponents();
-    document.getElementById('test').onclick = (event) => {
-        console.log('you clicked the div');
-    };
 }
 
 function loadComponents() {
-    createDifficultyDropdown();
+    createTopBar();
     setValues();
     createMinesweeper();
 }
@@ -48,8 +42,32 @@ function setValues() {
     cols = difficulties[difficulty].cols;
 }
 
-function createDifficultyDropdown() {
-    const div = document.createElement('div');
+function createTopBar() {
+    const topBar = document.createElement('div');
+    topBar.style.display = 'inline-block';
+
+    const topPanel = document.createElement('div');
+    topPanel.style.display = 'block';
+    topPanel.style.paddingBottom = '4px';
+
+    const newGame = document.createElement('button');
+    newGame.style.display = 'inline';
+    newGame.innerText = 'New game';
+    newGame.onmouseup = () => {
+        createMinesweeper();
+    }
+
+    const message = document.createElement('div');
+    message.id = 'minesweeper-message';
+    message.style.paddingLeft = '10px';
+    message.style.display = 'inline';
+
+    topPanel.appendChild(newGame);
+    topPanel.appendChild(message);
+
+    const midPanel = document.createElement('div');
+    midPanel.style.display = 'block';
+    midPanel.style.paddingBottom = '4px';
     
     const easy = document.createElement('option');
     easy.value = 'easy';
@@ -62,21 +80,38 @@ function createDifficultyDropdown() {
     const hard = document.createElement('option');
     hard.value = 'hard';
     hard.innerText = 'Hard';
+
+    const minesCount = document.createElement('div');
+    minesCount.style.display = 'inline';
+    minesCount.style.paddingLeft = '10px';
+    minesCount.innerText = 'Mines: ' + minesTotal;
     
     const select = document.createElement('select');
+    select.style.display = 'inline';
     select.onchange = () => {
-        console.log('creating new minesweeper');
         difficulty = select.value;
         setValues();
         createMinesweeper();
+        minesCount.innerText = 'Mines: ' + minesTotal;
     }
     select.appendChild(easy);
     select.appendChild(medium);
     select.appendChild(hard);
 
-    div.appendChild(select);
+    midPanel.appendChild(select);
+    midPanel.appendChild(minesCount);
+    
+    const bottomPanel = document.createElement('div');
+    bottomPanel.style.display = 'block';
+    bottomPanel.style.paddingBottom = '4px';
+    bottomPanel.style.fontSize = '12px';
+    bottomPanel.innerText = 'Left click to open a cell.\nRight click to set a flag.';
 
-    document.getElementById('minesweeper').appendChild(div);
+    topBar.appendChild(topPanel);
+    topBar.appendChild(midPanel);
+    topBar.appendChild(bottomPanel);
+
+    document.getElementById('minesweeper').appendChild(topBar);
 }
 
 function createMinesweeper() {
@@ -112,10 +147,11 @@ function createMainDiv() {
     buttonsDiv.oncontextmenu = () => {
         return false;
     }
-    buttonsDiv.style.width = (cols * cellWidth) + 'px';
-    buttonsDiv.style.height = (rows * cellHeight) + 'px';
+    buttonsDiv.style.width = (cols * cellWidth) + (cols * 2) + 1 + 'px';
+    buttonsDiv.style.height = (rows * cellHeight) + (rows * 2) + 1 + 'px';
     buttonsDiv.style.background = 'grey';
     buttonsDiv.style.color = 'white';
+    buttonsDiv.style.border = '2px black black';
 
     document.getElementById('minesweeper').appendChild(buttonsDiv);
 }
@@ -127,15 +163,18 @@ function createButtons() {
     for (let row = 0; row < rows; row++) {
         const rowButtons = [];
         for (let col = 0; col < cols; col++) {
-            const button = document.createElement('button');
+            const button = document.createElement('div');
             button.style.width = cellWidth + 'px';
             button.style.height = cellHeight + 'px';
-            button.style.display = 'inline';
+            button.style.display = 'inline-block';
             button.style.textAlign = 'center';
             button.style.margin = 'auto';
             button.style.color = 'black';
-            button.style.fontSize = '12px';
+            button.style.fontSize = '14px';
             button.style.padding = '0px';
+            button.style.backgroundColor = '#dddddd';
+            button.style.border = '1px solid black';
+            button.style.verticalAlign = 'top';
             button.onmouseup = (event) => onMouseClick(event, button, row, col);            
             buttonsDiv.appendChild(button);
             rowButtons.push(button);
@@ -145,6 +184,8 @@ function createButtons() {
 }
 
 function onMouseClick(event, button, row, col) {
+    if (button.disabled) return;
+
     let isRightClick;
     if ("which" in event) { // Gecko (Firefox), WebKit (Safari/Chrome) & Opera
         isRightClick = event.which === 3; 
@@ -164,17 +205,20 @@ function onMouseClick(event, button, row, col) {
         if (button.innerText === 'F') return;
 
         if (isAMine(row, col)) {
-            alert('BOOM');
+            // alert('BOOM');
+            const minesweeperMessage = document.getElementById('minesweeper-message');
+            minesweeperMessage.innerText = 'You lose!';
+            minesweeperMessage.style.color = 'red';
             revealMines();
             disableAllButtons();
         } else {
-            revealSquare(row, col);
+            revealCell(row, col);
             checkWin();
         }
     }
 }
 
-function revealSquare(row, col) {
+function revealCell(row, col) {
     if (row < 0 || col < 0) return;
     if (row >= rows || col >= cols) return;    
     if (buttons[row][col].disabled) return;        
@@ -191,14 +235,14 @@ function revealSquare(row, col) {
     buttons[row][col].disabled = true;
     buttons[row][col].style.backgroundColor = 'grey';
 
-    revealSquare(row - 1, col - 1);
-    revealSquare(row - 1, col);
-    revealSquare(row - 1, col + 1);
-    revealSquare(row, col - 1);
-    revealSquare(row, col + 1);
-    revealSquare(row + 1, col - 1);
-    revealSquare(row + 1, col);
-    revealSquare(row + 1, col + 1);
+    revealCell(row - 1, col - 1);
+    revealCell(row - 1, col);
+    revealCell(row - 1, col + 1);
+    revealCell(row, col - 1);
+    revealCell(row, col + 1);
+    revealCell(row + 1, col - 1);
+    revealCell(row + 1, col);
+    revealCell(row + 1, col + 1);
 }
 
 function countMinesAround(row, col) {
@@ -222,8 +266,9 @@ function countMinesAround(row, col) {
 function revealMines() {
     mines.forEach(mine => {
         buttons[mine.row][mine.col].disabled = true;
+        buttons[mine.row][mine.col].style.backgroundColor = 'red';
         buttons[mine.row][mine.col].innerText = 'X';
-        buttons[mine.row][mine.col].style.color = 'red';
+        buttons[mine.row][mine.col].style.color = 'white';
     });
 }
 
@@ -250,10 +295,10 @@ function checkWin() {
         })
     })
 
-    console.log(countDisabled);
-
     if (countDisabled === (rows * cols - minesTotal)) {
         disableAllButtons();
-        alert('Winner');
+        const minesweeperMessage = document.getElementById('minesweeper-message');
+        minesweeperMessage.innerText = 'You win!';
+        minesweeperMessage.style.color = 'green';
     }
 }

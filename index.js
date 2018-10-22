@@ -1,10 +1,12 @@
-const minesTotal = 10;
-const mines = [];
-const buttons = [];
-const rows = 9;
-const cols = 9;
+let minesTotal = 10;
+let mines = [];
+let buttons = [];
+let rows = 9;
+let cols = 9;
 let buttonsDiv;
 let difficulty = 'easy';
+const cellWidth = 16;
+const cellHeight = 16;
 
 const difficulties = {
     'easy': {
@@ -24,26 +26,26 @@ const difficulties = {
     }
 }
 
-// To do: change values when selecting something from dropdown
-
-
-// Configure with input text number of cols, rows and total mines: Check how it is done by microsoft and google
 // Change win and game over alert for text on top of div
 // Check browser compatibility
 
 window.onload = () => {
     loadComponents();
+    document.getElementById('test').onclick = (event) => {
+        console.log('you clicked the div');
+    };
 }
 
 function loadComponents() {
     createDifficultyDropdown();
+    setValues();
     createMinesweeper();
 }
 
-function createMinesweeper() {
-    createMines();
-    createMainDiv();
-    createButtons();
+function setValues() {
+    minesTotal = difficulties[difficulty].mines;
+    rows = difficulties[difficulty].rows;
+    cols = difficulties[difficulty].cols;
 }
 
 function createDifficultyDropdown() {
@@ -63,7 +65,9 @@ function createDifficultyDropdown() {
     
     const select = document.createElement('select');
     select.onchange = () => {
-        console.log(select.value);
+        console.log('creating new minesweeper');
+        difficulty = select.value;
+        setValues();
         createMinesweeper();
     }
     select.appendChild(easy);
@@ -75,12 +79,19 @@ function createDifficultyDropdown() {
     document.getElementById('minesweeper').appendChild(div);
 }
 
+function createMinesweeper() {
+    createMines();
+    createMainDiv();
+    createButtons();
+}
+
 function createMines() {
+    mines = [];
     let count = 0;
 
     while (count < minesTotal) {
-        const row = Math.floor(Math.random() * 10);
-        const col = Math.floor(Math.random() * 10);
+        const row = Math.floor(Math.random() * rows);
+        const col = Math.floor(Math.random() * cols);
 
         if (!isAMine(row, col)) {
             mines.push({row, col});
@@ -91,8 +102,8 @@ function createMines() {
 
 function createMainDiv() {
     const checkButtonsDiv = document.getElementById('buttonsDiv');
-    if (checkButtonsDiv !== undefined) {
-        document.removeChild(checkButtonsDiv);
+    if (checkButtonsDiv) {
+        document.getElementById('minesweeper').removeChild(checkButtonsDiv);
     }
 
     // Create div that will contain all buttons
@@ -101,8 +112,8 @@ function createMainDiv() {
     buttonsDiv.oncontextmenu = () => {
         return false;
     }
-    buttonsDiv.style.width = '144px';
-    buttonsDiv.style.height = '144px';
+    buttonsDiv.style.width = (cols * cellWidth) + 'px';
+    buttonsDiv.style.height = (rows * cellHeight) + 'px';
     buttonsDiv.style.background = 'grey';
     buttonsDiv.style.color = 'white';
 
@@ -110,15 +121,15 @@ function createMainDiv() {
 }
 
 function createButtons() {
-    // Create all buttons
+    buttons = [];
     const buttonsDiv = document.getElementById('buttonsDiv');
 
     for (let row = 0; row < rows; row++) {
         const rowButtons = [];
         for (let col = 0; col < cols; col++) {
             const button = document.createElement('button');
-            button.style.width = '16px';
-            button.style.height = '16px';
+            button.style.width = cellWidth + 'px';
+            button.style.height = cellHeight + 'px';
             button.style.display = 'inline';
             button.style.textAlign = 'center';
             button.style.margin = 'auto';
@@ -212,6 +223,7 @@ function revealMines() {
     mines.forEach(mine => {
         buttons[mine.row][mine.col].disabled = true;
         buttons[mine.row][mine.col].innerText = 'X';
+        buttons[mine.row][mine.col].style.color = 'red';
     });
 }
 
